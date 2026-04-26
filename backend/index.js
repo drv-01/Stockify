@@ -33,12 +33,18 @@ const connectDB = async () => {
         return;
     }
 
-    if (!process.env.MONGO_URI) {
+    const uri = process.env.MONGO_URI ? process.env.MONGO_URI.trim() : null;
+    
+    if (!uri) {
         throw new Error('MONGO_URI is not defined in environment variables');
     }
 
+    if (!uri.startsWith('mongodb://') && !uri.startsWith('mongodb+srv://')) {
+        throw new Error(`Invalid MONGO_URI scheme. Expected 'mongodb://' or 'mongodb+srv://'. Received string starting with: "${uri.substring(0, 10)}..."`);
+    }
+
     try {
-        const db = await mongoose.connect(process.env.MONGO_URI);
+        const db = await mongoose.connect(uri);
         isConnected = db.connections[0].readyState;
         console.log('=> New database connection established');
     } catch (error) {
