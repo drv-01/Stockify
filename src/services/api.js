@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 export const getMarketOverview = () => axios.get(`${API_BASE_URL}/stocks/overview`).then(r => r.data);
 export const getStockAnalysis = (ticker, period = '3mo') => axios.get(`${API_BASE_URL}/analysis/${ticker}?period=${period}`).then(r => r.data);
