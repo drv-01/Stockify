@@ -26,17 +26,32 @@ app.use(cors({
 app.use(express.json());
 
 // Database connection
+let isConnected = false;
 const connectDB = async () => {
+    if (isConnected) {
+        console.log('=> Using existing database connection');
+        return;
+    }
+
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/stockify');
-        console.log(`MongoDB Connected: ${conn.connection.host}`);
+        const db = await mongoose.connect(process.env.MONGO_URI);
+        isConnected = db.connections[0].readyState;
+        console.log('=> New database connection established');
     } catch (error) {
-        console.error(`Error: ${error.message}`);
-        // Don't exit process, just log error so other services might still work if they don't depend on DB
+        console.error('Error connecting to database:', error.message);
+        throw error;
     }
 };
 
-connectDB();
+// Middleware to ensure DB is connected
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        res.status(500).json({ error: "Database connection failed" });
+    }
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
