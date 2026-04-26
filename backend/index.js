@@ -44,17 +44,17 @@ const connectDB = async () => {
 };
 
 // Middleware to ensure DB is connected
-app.use(async (req, res, next) => {
+const dbMiddleware = async (req, res, next) => {
     try {
         await connectDB();
         next();
     } catch (error) {
         res.status(500).json({ error: "Database connection failed" });
     }
-});
+};
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', dbMiddleware, authRoutes);
 
 const sentimentService = new SentimentService();
 
